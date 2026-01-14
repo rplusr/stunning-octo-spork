@@ -51,7 +51,9 @@ const carriers = {
     australiaPost: {
         name: 'Australia Post',
         patterns: [
-            /^[A-Z]{2}\d{9}AU$/i   // International
+            /^[A-Z]{2}\d{9}AU$/i,              // International
+            /^\d{2}[A-Z]{3}\d{16,18}$/i,       // Domestic barcode (e.g., 36YDB010108101000930806)
+            /^\d{13}$/                          // Simple 13-digit domestic
         ],
         website: 'https://auspost.com.au'
     },
@@ -197,8 +199,14 @@ function formatDate(date) {
     }).format(date);
 }
 
+// Store current tracking data globally
+let currentTrackingData = null;
+
 // Display tracking results
 function displayResults(data) {
+    // Store for saving later
+    currentTrackingData = data;
+
     // Update tracking number and carrier
     document.getElementById('displayTrackingNumber').textContent = data.trackingNumber;
     document.getElementById('displayCarrier').textContent = data.carrier;
@@ -285,6 +293,22 @@ function displayResults(data) {
     // Show results section
     document.getElementById('resultsSection').classList.remove('hidden');
 
+    // Show/hide save button based on auth state
+    const saveBtn = document.getElementById('saveParcelBtn');
+    if (typeof isUserSignedIn !== 'undefined' && isUserSignedIn()) {
+        saveBtn.classList.remove('hidden');
+        saveBtn.classList.remove('saved');
+        saveBtn.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M17 21V13H7V21M7 3V8H15" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            Save Parcel
+        `;
+    } else {
+        saveBtn.classList.add('hidden');
+    }
+
     // Scroll to results
     setTimeout(() => {
         document.getElementById('resultsSection').scrollIntoView({
@@ -348,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const trackButton = document.getElementById('trackButton');
     const trackingInput = document.getElementById('trackingInput');
     const newTrackingButton = document.getElementById('newTrackingButton');
+    const saveParcelBtn = document.getElementById('saveParcelBtn');
 
     trackButton.addEventListener('click', handleTracking);
 
@@ -358,6 +383,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     newTrackingButton.addEventListener('click', handleNewTracking);
+
+    // Save parcel button
+    saveParcelBtn.addEventListener('click', async () => {
+        if (!currentTrackingData) return;
+
+        if (typeof saveParcelToDatabase === 'undefined') {
+            alert('Authentication not initialized. Please refresh the page.');
+            return;
+        }
+
+        const success = await saveParcelToDatabase(currentTrackingData);
+
+        if (success) {
+            saveParcelBtn.classList.add('saved');
+            saveParcelBtn.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Saved!
+            `;
+
+            setTimeout(() => {
+                saveParcelBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3.89543 3 5 3 H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M17 21V13H7V21M7 3V8H15" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Save Parcel
+                `;
+                saveParcelBtn.classList.remove('saved');
+            }, 2000);
+        }
+    });
 
     // Auto-detect carrier as user types
     trackingInput.addEventListener('input', (e) => {
