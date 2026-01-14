@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Parcel Tracker - Track Your Package Worldwide</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-gradient"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 7L12 3L4 7M20 7L12 11M20 7V17L12 21M12 11L4 7M12 11V21M4 7V17L12 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>Global Parcel Tracker</h1>
+            </div>
+            <p class="tagline">Track your packages from anywhere in the world</p>
+        </header>
+
+        <div class="search-section">
+            <div class="search-card">
+                <h2>Enter Tracking Number</h2>
+                <div class="search-form">
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                            <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <input
+                            type="text"
+                            id="trackingInput"
+                            placeholder="Enter tracking number (e.g., 1Z999AA10123456784)"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <button id="trackButton" class="track-button">
+                        <span class="button-text">Track Package</span>
+                        <svg class="button-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="carrierInfo" class="carrier-info"></div>
+            </div>
+
+            <div class="supported-carriers">
+                <h3>Supported Carriers Worldwide</h3>
+                <div class="carrier-grid">
+                    <div class="carrier-badge">UPS</div>
+                    <div class="carrier-badge">FedEx</div>
+                    <div class="carrier-badge">DHL</div>
+                    <div class="carrier-badge">USPS</div>
+                    <div class="carrier-badge">Royal Mail</div>
+                    <div class="carrier-badge">Canada Post</div>
+                    <div class="carrier-badge">Australia Post</div>
+                    <div class="carrier-badge">China Post</div>
+                    <div class="carrier-badge">Japan Post</div>
+                    <div class="carrier-badge">Deutsche Post</div>
+                    <div class="carrier-badge">La Poste</div>
+                    <div class="carrier-badge">Correos</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="results-section hidden">
+            <div class="results-card">
+                <div class="results-header">
+                    <div class="tracking-number-display">
+                        <span class="label">Tracking Number:</span>
+                        <span id="displayTrackingNumber" class="tracking-number"></span>
+                    </div>
+                    <div class="carrier-display">
+                        <span class="label">Carrier:</span>
+                        <span id="displayCarrier" class="carrier-name"></span>
+                    </div>
+                </div>
+
+                <div class="status-overview">
+                    <div class="status-icon" id="statusIcon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21 12V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="status-text">
+                        <h3 id="statusTitle">Package Status</h3>
+                        <p id="statusDescription">Tracking information</p>
+                    </div>
+                </div>
+
+                <div class="timeline">
+                    <h3>Tracking Timeline</h3>
+                    <div id="timelineContainer" class="timeline-container">
+                        <!-- Timeline items will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="package-details">
+                    <h3>Package Information</h3>
+                    <div id="packageInfo" class="info-grid">
+                        <!-- Package details will be inserted here -->
+                    </div>
+                </div>
+
+                <button id="newTrackingButton" class="new-tracking-button">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Track Another Package
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Global Parcel Tracker. Worldwide package tracking made simple.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
