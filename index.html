@@ -95,24 +95,6 @@
                 </div>
                 <div id="carrierInfo" class="carrier-info"></div>
             </div>
-
-            <div class="supported-carriers">
-                <h3>Supported Carriers Worldwide</h3>
-                <div class="carrier-grid">
-                    <div class="carrier-badge">UPS</div>
-                    <div class="carrier-badge">FedEx</div>
-                    <div class="carrier-badge">DHL</div>
-                    <div class="carrier-badge">USPS</div>
-                    <div class="carrier-badge">Royal Mail</div>
-                    <div class="carrier-badge">Canada Post</div>
-                    <div class="carrier-badge">Australia Post</div>
-                    <div class="carrier-badge">China Post</div>
-                    <div class="carrier-badge">Japan Post</div>
-                    <div class="carrier-badge">Deutsche Post</div>
-                    <div class="carrier-badge">La Poste</div>
-                    <div class="carrier-badge">Correos</div>
-                </div>
-            </div>
         </div>
 
         <div id="resultsSection" class="results-section hidden">
@@ -138,6 +120,13 @@
                     <div class="status-text">
                         <h3 id="statusTitle">Package Status</h3>
                         <p id="statusDescription">Tracking information</p>
+                    </div>
+                </div>
+
+                <div class="tracking-map-section">
+                    <h3>Tracking Route</h3>
+                    <div id="trackingMap" class="tracking-map">
+                        <!-- Map will be inserted here -->
                     </div>
                 </div>
 
@@ -174,14 +163,88 @@
         </div>
     </div>
 
+    <!-- Name Parcel Modal -->
+    <div id="nameParcelModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Save Parcel</h3>
+                <button id="closeNameModal" class="close-modal-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label class="input-label">
+                    <span>Package Name (optional)</span>
+                    <input type="text" id="parcelNameInput" placeholder="e.g., Birthday gift, New laptop" maxlength="50">
+                </label>
+                <p class="input-hint">Give your package a memorable name</p>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelSaveBtn" class="btn-secondary">Cancel</button>
+                <button id="confirmSaveBtn" class="btn-primary">Save Parcel</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
-        <p>&copy; 2026 Parcel Tracker</p>
+        <div class="footer-content">
+            <div class="footer-carriers">
+                <span class="footer-label">Supported carriers:</span>
+                <div class="carrier-logos">
+                    <div class="carrier-logo" title="UPS">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><text x="2" y="18" font-size="14" font-weight="bold">UPS</text></svg>
+                    </div>
+                    <div class="carrier-logo" title="FedEx">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><text x="0" y="18" font-size="12" font-weight="bold">FedEx</text></svg>
+                    </div>
+                    <div class="carrier-logo" title="DHL">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><text x="2" y="18" font-size="14" font-weight="bold">DHL</text></svg>
+                    </div>
+                    <div class="carrier-logo" title="USPS">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><text x="0" y="18" font-size="12" font-weight="bold">USPS</text></svg>
+                    </div>
+                    <div class="carrier-logo" title="Royal Mail">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="Canada Post">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v10l10 5 10-5V7z"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="Australia Post">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="China Post">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 9h9l-7 5 3 9-7-5-7 5 3-9-7-5h9z"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="Japan Post">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="Deutsche Post">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="La Poste">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12h20z"/></svg>
+                    </div>
+                    <div class="carrier-logo" title="Correos">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+                    </div>
+                </div>
+            </div>
+            <p class="footer-copyright">&copy; 2026 Parcel Tracker</p>
+        </div>
     </footer>
+
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script src="auth.js"></script>
     <script src="script.js"></script>

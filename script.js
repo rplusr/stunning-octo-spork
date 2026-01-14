@@ -201,6 +201,102 @@ function formatDate(date) {
 
 // Store current tracking data globally
 let currentTrackingData = null;
+let trackingMap = null;
+
+// Geocoding service for location coordinates (using Nominatim - free OpenStreetMap service)
+async function geocodeLocation(locationString) {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationString)}&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+            return {
+                lat: parseFloat(data[0].lat),
+                lng: parseFloat(data[0].lon)
+            };
+        }
+    } catch (error) {
+        console.error('Geocoding error:', error);
+    }
+    return null;
+}
+
+// Initialize or update tracking map
+async function updateTrackingMap(timeline) {
+    const mapContainer = document.getElementById('trackingMap');
+
+    if (!mapContainer) return;
+
+    // Get coordinates for all locations
+    const locations = [];
+    for (const event of timeline) {
+        const coords = await geocodeLocation(event.location);
+        if (coords) {
+            locations.push({
+                ...event,
+                coords
+            });
+        }
+    }
+
+    if (locations.length === 0) {
+        mapContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">Location data unavailable</div>';
+        return;
+    }
+
+    // Initialize map if not exists
+    if (!trackingMap) {
+        trackingMap = L.map('trackingMap').setView([locations[0].coords.lat, locations[0].coords.lng], 4);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(trackingMap);
+    }
+
+    // Clear existing markers and lines
+    trackingMap.eachLayer((layer) => {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+            trackingMap.removeLayer(layer);
+        }
+    });
+
+    // Add markers for each location
+    locations.forEach((location, index) => {
+        const isCurrentLocation = location.isCurrent;
+
+        const icon = L.divIcon({
+            html: `<div style="background: ${isCurrentLocation ? '#0066ff' : '#999'}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">${index + 1}</div>`,
+            className: 'custom-marker',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        const marker = L.marker([location.coords.lat, location.coords.lng], { icon })
+            .addTo(trackingMap)
+            .bindPopup(`
+                <div style="font-size: 12px;">
+                    <strong>${location.status}</strong><br>
+                    ${location.location}<br>
+                    <span style="color: #666;">${formatDate(location.date)}</span>
+                </div>
+            `);
+    });
+
+    // Draw path between locations
+    if (locations.length > 1) {
+        const pathCoords = locations.map(loc => [loc.coords.lat, loc.coords.lng]);
+        L.polyline(pathCoords, {
+            color: '#0066ff',
+            weight: 2,
+            opacity: 0.6,
+            dashArray: '5, 10'
+        }).addTo(trackingMap);
+    }
+
+    // Fit map to show all markers
+    const bounds = L.latLngBounds(locations.map(loc => [loc.coords.lat, loc.coords.lng]));
+    trackingMap.fitBounds(bounds, { padding: [50, 50] });
+}
 
 // Display tracking results
 function displayResults(data) {
@@ -251,6 +347,9 @@ function displayResults(data) {
             </svg>
         `;
     }
+
+    // Update tracking map
+    updateTrackingMap(data.timeline);
 
     // Build timeline
     const timelineContainer = document.getElementById('timelineContainer');
@@ -384,8 +483,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     newTrackingButton.addEventListener('click', handleNewTracking);
 
-    // Save parcel button
-    saveParcelBtn.addEventListener('click', async () => {
+    // Save parcel button - show name modal
+    saveParcelBtn.addEventListener('click', () => {
         if (!currentTrackingData) return;
 
         if (typeof saveParcelToDatabase === 'undefined') {
@@ -393,11 +492,55 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const success = await saveParcelToDatabase(currentTrackingData);
+        // Show name modal
+        document.getElementById('nameParcelModal').classList.remove('hidden');
+        document.getElementById('parcelNameInput').value = '';
+        document.getElementById('parcelNameInput').focus();
+    });
+
+    // Name modal handlers
+    const nameModal = document.getElementById('nameParcelModal');
+    const parcelNameInput = document.getElementById('parcelNameInput');
+    const closeNameModal = document.getElementById('closeNameModal');
+    const cancelSaveBtn = document.getElementById('cancelSaveBtn');
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+
+    // Close modal
+    const hideNameModal = () => {
+        nameModal.classList.add('hidden');
+        parcelNameInput.value = '';
+    };
+
+    closeNameModal.addEventListener('click', hideNameModal);
+    cancelSaveBtn.addEventListener('click', hideNameModal);
+
+    // Click outside to close
+    nameModal.addEventListener('click', (e) => {
+        if (e.target === nameModal) {
+            hideNameModal();
+        }
+    });
+
+    // Confirm save
+    confirmSaveBtn.addEventListener('click', async () => {
+        if (!currentTrackingData) return;
+
+        const parcelName = parcelNameInput.value.trim();
+
+        // Add name to tracking data
+        const dataToSave = {
+            ...currentTrackingData,
+            name: parcelName || null
+        };
+
+        const success = await saveParcelToDatabase(dataToSave);
 
         if (success) {
-            saveParcelBtn.classList.add('saved');
-            saveParcelBtn.innerHTML = `
+            hideNameModal();
+
+            const saveBtn = document.getElementById('saveParcelBtn');
+            saveBtn.classList.add('saved');
+            saveBtn.innerHTML = `
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -405,15 +548,22 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             setTimeout(() => {
-                saveParcelBtn.innerHTML = `
+                saveBtn.innerHTML = `
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3.89543 3 5 3 H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" stroke-width="2"/>
                         <path d="M17 21V13H7V21M7 3V8H15" stroke="currentColor" stroke-width="2"/>
                     </svg>
                     Save Parcel
                 `;
-                saveParcelBtn.classList.remove('saved');
+                saveBtn.classList.remove('saved');
             }, 2000);
+        }
+    });
+
+    // Enter key to save
+    parcelNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmSaveBtn.click();
         }
     });
 

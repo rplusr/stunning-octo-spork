@@ -167,6 +167,7 @@ async function saveParcel(parcelData) {
         trackingNumber: parcelData.trackingNumber,
         carrier: parcelData.carrier,
         currentStatus: parcelData.currentStatus,
+        name: parcelData.name || null,
         savedAt: new Date().toISOString(),
         userId: currentUser.uid
     };
@@ -289,9 +290,12 @@ function showSavedParcels() {
                 year: 'numeric'
             });
 
+            const nameDisplay = parcel.name ? `<div class="saved-parcel-name">${parcel.name}</div>` : '';
+
             item.innerHTML = `
                 <div class="saved-parcel-header-row">
                     <div>
+                        ${nameDisplay}
                         <div class="saved-parcel-tracking">${parcel.trackingNumber}</div>
                         <div class="saved-parcel-carrier">${parcel.carrier}</div>
                         <div class="saved-parcel-date">Saved ${dateStr}</div>
