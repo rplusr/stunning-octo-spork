@@ -1,114 +1,111 @@
 // Carrier detection patterns and information
+// Ordered from most specific to least specific to avoid false positives
 const carriers = {
     ups: {
         name: 'UPS',
         patterns: [
-            /^1Z[0-9A-Z]{16}$/i, // Standard UPS tracking number
+            /^1Z[0-9A-Z]{16}$/i, // Standard UPS tracking number (starts with 1Z)
             /^T\d{10}$/i, // UPS Mail Innovations
-            /^[0-9]{26}$/
+            /^\d{26}$/ // UPS freight
         ],
         website: 'https://www.ups.com'
     },
     fedex: {
         name: 'FedEx',
         patterns: [
-            /^\d{12}$/, // FedEx Express (12 digits)
-            /^\d{15}$/, // FedEx Express (15 digits)
-            /^\d{20}$/, // FedEx Ground
-            /^96\d{20}$/ // FedEx SmartPost
+            /^96\d{20}$/,  // FedEx SmartPost (starts with 96)
+            /^\d{15}$/,    // FedEx Express (15 digits)
+            /^\d{12}$/,    // FedEx Express (12 digits)
+            /^\d{20,22}$/  // FedEx Ground
         ],
         website: 'https://www.fedex.com'
     },
     usps: {
         name: 'USPS',
         patterns: [
-            /^94\d{20}$/, // USPS Priority Mail
-            /^92\d{20}$/, // USPS Parcel Select
-            /^93\d{20}$/, // USPS Parcel Select Lightweight
-            /^82\d{8}$/, // USPS Express Mail
-            /^[A-Z]{2}\d{9}US$/i // International format
+            /^94\d{20,22}$/,       // USPS Priority Mail (starts with 94)
+            /^92\d{20,22}$/,       // USPS Parcel Select (starts with 92)
+            /^93\d{20,22}$/,       // USPS Parcel Select Lightweight (starts with 93)
+            /^82\d{8}$/,           // USPS Express Mail (starts with 82)
+            /^(94|92|93|82)\d+$/,  // Other USPS formats
+            /^[A-Z]{2}\d{9}US$/i   // International format
         ],
         website: 'https://www.usps.com'
-    },
-    dhl: {
-        name: 'DHL',
-        patterns: [
-            /^\d{10,11}$/, // DHL Express
-            /^[A-Z]{3}\d{7}$/, // DHL eCommerce
-            /^\d{12}$/ // DHL Parcel
-        ],
-        website: 'https://www.dhl.com'
     },
     royalMail: {
         name: 'Royal Mail',
         patterns: [
-            /^[A-Z]{2}\d{9}GB$/i, // International
-            /^[A-Z]{2}\d{7}$/i // Domestic
+            /^[A-Z]{2}\d{9}GB$/i,  // International
+            /^[A-Z]{2}\d{7}$/i     // Domestic
         ],
         website: 'https://www.royalmail.com'
     },
     canadaPost: {
         name: 'Canada Post',
         patterns: [
-            /^\d{16}$/, // Domestic
-            /^[A-Z]{2}\d{9}CA$/i // International
+            /^[A-Z]{2}\d{9}CA$/i,  // International
+            /^\d{16}$/             // Domestic
         ],
         website: 'https://www.canadapost.ca'
     },
     australiaPost: {
         name: 'Australia Post',
         patterns: [
-            /^[A-Z]{2}\d{9}AU$/i, // International
-            /^\d{13}$/ // Domestic
+            /^[A-Z]{2}\d{9}AU$/i   // International
         ],
         website: 'https://auspost.com.au'
     },
     chinaPost: {
         name: 'China Post',
         patterns: [
-            /^[A-Z]{2}\d{9}CN$/i, // International
-            /^\d{13}$/ // Domestic
+            /^[A-Z]{2}\d{9}CN$/i   // International
         ],
         website: 'http://www.chinapost.com.cn'
     },
     japanPost: {
         name: 'Japan Post',
         patterns: [
-            /^[A-Z]{2}\d{9}JP$/i, // International
-            /^\d{12,14}$/ // Domestic
+            /^[A-Z]{2}\d{9}JP$/i   // International
         ],
         website: 'https://www.post.japanpost.jp'
     },
     deutschePost: {
-        name: 'Deutsche Post DHL',
+        name: 'Deutsche Post',
         patterns: [
-            /^[A-Z]{2}\d{9}DE$/i, // International
-            /^\d{12,16}$/ // Domestic
+            /^[A-Z]{2}\d{9}DE$/i   // International
         ],
         website: 'https://www.deutschepost.de'
     },
     laPoste: {
         name: 'La Poste',
         patterns: [
-            /^[A-Z]{2}\d{9}FR$/i, // International
-            /^\d{13}$/ // Domestic
+            /^[A-Z]{2}\d{9}FR$/i,  // International
+            /^[0-9L]{13}$/         // Domestic (letters + numbers)
         ],
         website: 'https://www.laposte.fr'
     },
     correos: {
         name: 'Correos',
         patterns: [
-            /^[A-Z]{2}\d{9}ES$/i, // International
-            /^\d{13}$/ // Domestic
+            /^[A-Z]{2}\d{9}ES$/i   // International
         ],
         website: 'https://www.correos.es'
+    },
+    dhl: {
+        name: 'DHL',
+        patterns: [
+            /^\d{10,11}$/,         // DHL Express (10-11 digits)
+            /^[A-Z]{3}\d{7,9}$/i   // DHL eCommerce
+        ],
+        website: 'https://www.dhl.com'
     }
 };
 
 // Detect carrier from tracking number
 function detectCarrier(trackingNumber) {
-    const cleanedNumber = trackingNumber.trim().toUpperCase();
+    const cleanedNumber = trackingNumber.trim().replace(/\s+/g, '').toUpperCase();
 
+    // Check each carrier in order (most specific patterns first)
     for (const [key, carrier] of Object.entries(carriers)) {
         for (const pattern of carrier.patterns) {
             if (pattern.test(cleanedNumber)) {
@@ -131,16 +128,16 @@ function generateTrackingData(trackingNumber, carrier) {
     ];
 
     const locations = {
-        'UPS': ['Louisville, KY', 'Chicago, IL', 'New York, NY'],
-        'FedEx': ['Memphis, TN', 'Indianapolis, IN', 'Boston, MA'],
-        'USPS': ['Los Angeles, CA', 'Denver, CO', 'Miami, FL'],
-        'DHL': ['Cincinnati, OH', 'Atlanta, GA', 'Seattle, WA'],
+        'UPS': ['Louisville, KY, USA', 'Chicago, IL, USA', 'New York, NY, USA'],
+        'FedEx': ['Memphis, TN, USA', 'Indianapolis, IN, USA', 'Boston, MA, USA'],
+        'USPS': ['Los Angeles, CA, USA', 'Denver, CO, USA', 'Miami, FL, USA'],
+        'DHL': ['Cincinnati, OH, USA', 'Atlanta, GA, USA', 'Seattle, WA, USA'],
         'Royal Mail': ['London, UK', 'Birmingham, UK', 'Manchester, UK'],
         'Canada Post': ['Toronto, ON', 'Montreal, QC', 'Vancouver, BC'],
         'Australia Post': ['Sydney, NSW', 'Melbourne, VIC', 'Brisbane, QLD'],
         'China Post': ['Beijing', 'Shanghai', 'Guangzhou'],
         'Japan Post': ['Tokyo', 'Osaka', 'Nagoya'],
-        'Deutsche Post DHL': ['Frankfurt', 'Berlin', 'Munich'],
+        'Deutsche Post': ['Frankfurt', 'Berlin', 'Munich'],
         'La Poste': ['Paris', 'Lyon', 'Marseille'],
         'Correos': ['Madrid', 'Barcelona', 'Valencia']
     };
@@ -175,7 +172,7 @@ function generateTrackingData(trackingNumber, carrier) {
     // Generate package info
     const packageInfo = {
         weight: `${(Math.random() * 10 + 1).toFixed(2)} kg`,
-        dimensions: `${Math.floor(Math.random() * 30 + 10)} x ${Math.floor(Math.random() * 30 + 10)} x ${Math.floor(Math.random() * 30 + 10)} cm`,
+        dimensions: `${Math.floor(Math.random() * 30 + 10)} × ${Math.floor(Math.random() * 30 + 10)} × ${Math.floor(Math.random() * 30 + 10)} cm`,
         estimatedDelivery: formatDate(new Date(currentDate.getTime() + (Math.random() * 2 + 1) * 24 * 60 * 60 * 1000)),
         service: ['Express', 'Standard', 'Economy', 'Priority'][Math.floor(Math.random() * 4)]
     };
@@ -217,9 +214,9 @@ function displayResults(data) {
     // Update status icon and color based on status
     const statusOverview = document.querySelector('.status-overview');
     if (data.currentStatus === 'Delivered') {
-        statusOverview.style.background = 'linear-gradient(135deg, #f0fdf4, #dcfce7)';
-        statusOverview.style.borderColor = '#86efac';
-        statusIcon.style.background = '#10b981';
+        statusOverview.style.background = 'rgba(0, 200, 83, 0.08)';
+        statusOverview.style.borderColor = 'rgba(0, 200, 83, 0.2)';
+        statusIcon.style.background = '#00c853';
         statusIcon.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -227,18 +224,18 @@ function displayResults(data) {
             </svg>
         `;
     } else if (data.currentStatus === 'Out for Delivery') {
-        statusOverview.style.background = 'linear-gradient(135deg, #fefce8, #fef9c3)';
-        statusOverview.style.borderColor = '#fde047';
-        statusIcon.style.background = '#f59e0b';
+        statusOverview.style.background = 'rgba(255, 149, 0, 0.08)';
+        statusOverview.style.borderColor = 'rgba(255, 149, 0, 0.2)';
+        statusIcon.style.background = '#ff9500';
         statusIcon.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         `;
     } else {
-        statusOverview.style.background = 'linear-gradient(135deg, #eff6ff, #dbeafe)';
-        statusOverview.style.borderColor = '#93c5fd';
-        statusIcon.style.background = '#3b82f6';
+        statusOverview.style.background = 'var(--bg-secondary)';
+        statusOverview.style.borderColor = 'var(--border)';
+        statusIcon.style.background = '#0066ff';
         statusIcon.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="1" y="3" width="15" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
@@ -251,10 +248,9 @@ function displayResults(data) {
     const timelineContainer = document.getElementById('timelineContainer');
     timelineContainer.innerHTML = '';
 
-    data.timeline.forEach((event, index) => {
+    data.timeline.forEach((event) => {
         const timelineItem = document.createElement('div');
         timelineItem.className = 'timeline-item' + (event.isCurrent ? ' current' : '');
-        timelineItem.style.animationDelay = `${index * 0.1}s`;
 
         timelineItem.innerHTML = `
             <div class="timeline-date">${formatDate(event.date)}</div>
@@ -305,7 +301,7 @@ function handleTracking() {
     const carrierInfo = document.getElementById('carrierInfo');
 
     if (!trackingNumber) {
-        carrierInfo.innerHTML = '<span style="color: #ef4444;">⚠ Please enter a tracking number</span>';
+        carrierInfo.innerHTML = '<span style="color: #ff3b30;">Please enter a tracking number</span>';
         return;
     }
 
@@ -314,16 +310,16 @@ function handleTracking() {
 
     if (!carrier) {
         carrierInfo.innerHTML = `
-            <span style="color: #f59e0b;">⚠ Could not detect carrier from tracking number.</span><br>
-            <span style="color: #6b7280;">Please check the format and try again. Supported formats include UPS (1Z...), FedEx (12-20 digits), USPS (20-22 digits), and international tracking numbers.</span>
+            <span style="color: #ff9500;">Could not detect carrier from tracking number.</span><br>
+            <span style="color: #666666;">Please check the format. Supported: UPS (1Z...), FedEx (12-22 digits), USPS (94/92/93/82...), and international codes (XX123456789YY).</span>
         `;
         return;
     }
 
     // Show detected carrier
     carrierInfo.innerHTML = `
-        <span style="color: #10b981;">✓ Detected carrier: <strong>${carrier.name}</strong></span><br>
-        <span style="color: #6b7280;">Retrieving tracking information...</span>
+        <span style="color: #00c853;">Detected carrier: <strong>${carrier.name}</strong></span><br>
+        <span style="color: #666666;">Retrieving tracking information...</span>
     `;
 
     // Simulate API delay
@@ -331,7 +327,7 @@ function handleTracking() {
         const trackingData = generateTrackingData(trackingNumber, carrier);
         displayResults(trackingData);
         carrierInfo.innerHTML = '';
-    }, 1000);
+    }, 800);
 }
 
 // Handle new tracking button
@@ -371,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trackingNumber.length > 5) {
             const carrier = detectCarrier(trackingNumber);
             if (carrier) {
-                carrierInfo.innerHTML = `<span style="color: #10b981;">✓ Detected: <strong>${carrier.name}</strong></span>`;
+                carrierInfo.innerHTML = `<span style="color: #00c853;">Detected: <strong>${carrier.name}</strong></span>`;
             } else {
                 carrierInfo.innerHTML = '';
             }
@@ -382,9 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Example tracking numbers for testing (displayed in console)
-console.log('Example tracking numbers for testing:');
+console.log('%cExample tracking numbers for testing:', 'font-weight: bold; font-size: 14px;');
 console.log('UPS: 1Z999AA10123456784');
-console.log('FedEx: 123456789012');
+console.log('FedEx: 123456789012 or 961234567890123456789012');
 console.log('USPS: 9400111899562843678599');
 console.log('DHL: 1234567890');
 console.log('Royal Mail: AB123456789GB');
