@@ -1,13 +1,13 @@
-# 📦 Global Parcel Tracker & Animation Studio
+# 📦 Snylmail & Animation Studio
 
 A beautifully designed, worldwide parcel tracking application with support for major international carriers. Also includes a professional animation design studio for creating and exporting animations with AI-agent-ready specifications.
 
-![Parcel Tracker](https://img.shields.io/badge/status-active-success.svg)
+![Snylmail](https://img.shields.io/badge/status-active-success.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 
 ## 🎯 What's Inside
 
-### 📦 Global Parcel Tracker
+### 📦 Snylmail
 Track packages from anywhere in the world with real-time carrier detection and beautiful UI.
 
 ### ⚡ Animation Studio
