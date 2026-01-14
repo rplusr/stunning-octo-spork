@@ -903,31 +903,22 @@ body {
     color: var(--text-tertiary);
 }
 
-.carrier-logos {
+.carrier-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
-.carrier-logo {
-    width: 32px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.5;
-    transition: opacity 0.2s ease;
+.carrier-name {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
 }
 
-.carrier-logo:hover {
-    opacity: 0.8;
-}
-
-.carrier-logo svg {
-    width: 100%;
-    height: 100%;
-    fill: var(--text-tertiary);
+.carrier-name:not(:last-child)::after {
+    content: '•';
+    margin-left: 0.5rem;
+    color: var(--text-tertiary);
 }
 
 .footer-copyright {
