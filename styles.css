@@ -262,10 +262,11 @@ body {
 }
 
 .saved-parcel-tracking {
-    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 300;
     color: var(--text-secondary);
+    letter-spacing: 0.01em;
 }
 
 .delete-parcel-btn {
@@ -647,9 +648,10 @@ body {
 
 .tracking-number {
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 300;
     color: var(--text-primary);
-    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.02em;
 }
 
 .carrier-name {
@@ -661,8 +663,10 @@ body {
 .order-value,
 .invoice-value {
     font-size: 0.9375rem;
-    font-weight: 500;
+    font-weight: 300;
     color: var(--text-primary);
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.02em;
 }
 
 /* Status Overview */
@@ -765,13 +769,17 @@ body {
 .timeline-date {
     font-size: 0.8125rem;
     color: var(--text-tertiary);
-    font-weight: 500;
+    font-weight: 300;
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.01em;
     margin-bottom: 0.25rem;
 }
 
 .timeline-status {
     font-size: 0.9375rem;
-    font-weight: 600;
+    font-weight: 300;
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.01em;
     color: var(--text-primary);
     margin-bottom: 0.125rem;
 }
@@ -779,6 +787,9 @@ body {
 .timeline-location {
     font-size: 0.875rem;
     color: var(--text-secondary);
+    font-weight: 300;
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.01em;
 }
 
 /* Package Details */
@@ -869,7 +880,9 @@ body {
 
 .info-value {
     font-size: 0.9375rem;
-    font-weight: 500;
+    font-weight: 300;
+    font-family: 'Geist Mono', 'SF Mono', 'Monaco', 'Courier New', monospace;
+    letter-spacing: 0.01em;
     color: var(--text-primary);
 }
 
