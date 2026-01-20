@@ -1,3 +1,86 @@
+// Checksum validation functions for tracking numbers
+const checksumValidators = {
+    // UPS uses Mod 10 check digit
+    validateUPS: (trackingNumber) => {
+        if (!trackingNumber.startsWith('1Z')) return false;
+
+        // Remove 1Z prefix and extract check digit
+        const number = trackingNumber.substring(2);
+        if (number.length !== 16) return false;
+
+        const checkDigit = number.charAt(15);
+        const digits = number.substring(0, 15);
+
+        // Convert letters to numbers (A=2, B=3, ..., Z=9, then repeat)
+        let sum = 0;
+        for (let i = 0; i < digits.length; i++) {
+            let char = digits.charAt(i);
+            let value;
+
+            if (char >= '0' && char <= '9') {
+                value = parseInt(char);
+            } else {
+                // Convert letter to number
+                value = ((char.charCodeAt(0) - 65) % 10) + 2;
+            }
+
+            // Odd positions get doubled
+            if (i % 2 === 0) {
+                value *= 2;
+            }
+            sum += value;
+        }
+
+        const calculatedCheck = (10 - (sum % 10)) % 10;
+        return checkDigit === calculatedCheck.toString() || checkDigit === String.fromCharCode(65 + calculatedCheck - 2);
+    },
+
+    // USPS uses Mod 10 check digit
+    validateUSPS: (trackingNumber) => {
+        // Only validate 20-22 digit tracking numbers
+        if (trackingNumber.length < 20 || trackingNumber.length > 22) return true; // Skip validation for other formats
+        if (!/^\d+$/.test(trackingNumber)) return true; // Skip if not all digits
+
+        const checkDigit = parseInt(trackingNumber.charAt(trackingNumber.length - 1));
+        const digits = trackingNumber.substring(0, trackingNumber.length - 1);
+
+        let sum = 0;
+        for (let i = 0; i < digits.length; i++) {
+            let value = parseInt(digits.charAt(i));
+            // Multiply odd positions (0-indexed) by 3
+            if (i % 2 === 0) {
+                value *= 3;
+            }
+            sum += value;
+        }
+
+        const calculatedCheck = (10 - (sum % 10)) % 10;
+        return checkDigit === calculatedCheck;
+    },
+
+    // FedEx uses Mod 10 for most formats
+    validateFedEx: (trackingNumber) => {
+        // Only validate standard numeric formats
+        if (!/^\d+$/.test(trackingNumber)) return true;
+        if (trackingNumber.length !== 12 && trackingNumber.length !== 15) return true;
+
+        const checkDigit = parseInt(trackingNumber.charAt(trackingNumber.length - 1));
+        const digits = trackingNumber.substring(0, trackingNumber.length - 1);
+
+        let sum = 0;
+        let multiplier = 1;
+
+        for (let i = digits.length - 1; i >= 0; i--) {
+            let value = parseInt(digits.charAt(i)) * multiplier;
+            sum += value;
+            multiplier = multiplier === 1 ? 3 : 1;
+        }
+
+        const calculatedCheck = (10 - (sum % 10)) % 10;
+        return checkDigit === calculatedCheck;
+    }
+};
+
 // Carrier detection patterns and information
 // Ordered from most specific to least specific to avoid false positives
 const carriers = {
@@ -103,7 +186,7 @@ const carriers = {
     }
 };
 
-// Detect carrier from tracking number
+// Detect carrier from tracking number with checksum validation
 function detectCarrier(trackingNumber) {
     const cleanedNumber = trackingNumber.trim().replace(/\s+/g, '').toUpperCase();
 
@@ -111,12 +194,145 @@ function detectCarrier(trackingNumber) {
     for (const [key, carrier] of Object.entries(carriers)) {
         for (const pattern of carrier.patterns) {
             if (pattern.test(cleanedNumber)) {
-                return carrier;
+                // Validate checksum if validator exists
+                let isValid = true;
+
+                if (key === 'ups') {
+                    isValid = checksumValidators.validateUPS(cleanedNumber);
+                } else if (key === 'usps') {
+                    isValid = checksumValidators.validateUSPS(cleanedNumber);
+                } else if (key === 'fedex') {
+                    isValid = checksumValidators.validateFedEx(cleanedNumber);
+                }
+
+                if (isValid) {
+                    return { ...carrier, key };
+                } else {
+                    return { error: 'invalid', carrier: carrier.name };
+                }
             }
         }
     }
 
     return null;
+}
+
+// AI-powered delivery date prediction
+function predictDeliveryDate(timeline, carrier, packageInfo) {
+    const now = new Date();
+    const currentStatus = timeline[timeline.length - 1].status;
+    const lastUpdate = timeline[timeline.length - 1].date;
+
+    // Calculate days since last update
+    const daysSinceUpdate = Math.floor((now - lastUpdate) / (1000 * 60 * 60 * 24));
+
+    // Base prediction on current status
+    let daysUntilDelivery;
+    let confidence;
+
+    switch (currentStatus) {
+        case 'Delivered':
+            return {
+                date: lastUpdate,
+                confidence: 100,
+                reason: 'Package has been delivered'
+            };
+
+        case 'Out for Delivery':
+            daysUntilDelivery = 0; // Today
+            confidence = 95;
+            break;
+
+        case 'In Transit':
+            // Analyze journey progress
+            const totalEvents = timeline.length;
+            const daysInTransit = Math.floor((now - timeline[0].date) / (1000 * 60 * 60 * 24));
+
+            // Estimate based on service type
+            if (packageInfo.service === 'Express') {
+                daysUntilDelivery = Math.max(1, 3 - daysInTransit);
+                confidence = 85;
+            } else if (packageInfo.service === 'Priority') {
+                daysUntilDelivery = Math.max(1, 5 - daysInTransit);
+                confidence = 80;
+            } else if (packageInfo.service === 'Standard') {
+                daysUntilDelivery = Math.max(2, 7 - daysInTransit);
+                confidence = 75;
+            } else {
+                daysUntilDelivery = Math.max(3, 10 - daysInTransit);
+                confidence = 70;
+            }
+            break;
+
+        case 'Picked Up':
+            // Just picked up, estimate based on service type
+            if (packageInfo.service === 'Express') {
+                daysUntilDelivery = 2;
+                confidence = 80;
+            } else if (packageInfo.service === 'Priority') {
+                daysUntilDelivery = 4;
+                confidence = 75;
+            } else if (packageInfo.service === 'Standard') {
+                daysUntilDelivery = 6;
+                confidence = 70;
+            } else {
+                daysUntilDelivery = 8;
+                confidence = 65;
+            }
+            break;
+
+        case 'Order Processed':
+            // Not yet shipped
+            if (packageInfo.service === 'Express') {
+                daysUntilDelivery = 3;
+                confidence = 70;
+            } else if (packageInfo.service === 'Priority') {
+                daysUntilDelivery = 5;
+                confidence = 65;
+            } else {
+                daysUntilDelivery = 7;
+                confidence = 60;
+            }
+            break;
+
+        default:
+            daysUntilDelivery = 5;
+            confidence = 60;
+    }
+
+    // Adjust for carrier reliability (carrier-specific adjustments)
+    const carrierAdjustments = {
+        'UPS': { days: -0.5, confidence: 5 },
+        'FedEx': { days: -0.5, confidence: 5 },
+        'DHL': { days: 0, confidence: 3 },
+        'USPS': { days: 1, confidence: -5 }
+    };
+
+    if (carrierAdjustments[carrier.name]) {
+        daysUntilDelivery += carrierAdjustments[carrier.name].days;
+        confidence += carrierAdjustments[carrier.name].confidence;
+    }
+
+    // Calculate predicted date
+    const predictedDate = new Date(now);
+    predictedDate.setDate(predictedDate.getDate() + Math.ceil(daysUntilDelivery));
+
+    // Generate reason
+    let reason;
+    if (currentStatus === 'Out for Delivery') {
+        reason = 'Based on out for delivery status';
+    } else if (currentStatus === 'In Transit') {
+        reason = `Analyzing ${timeline.length} tracking events and ${carrier.name} delivery patterns`;
+    } else {
+        reason = `Based on ${packageInfo.service} service and typical ${carrier.name} delivery times`;
+    }
+
+    return {
+        date: predictedDate,
+        confidence: Math.min(95, Math.max(60, confidence)),
+        reason,
+        daysRemaining: Math.ceil(daysUntilDelivery)
+    };
 }
 
 // Generate mock tracking data based on carrier
@@ -179,12 +395,16 @@ function generateTrackingData(trackingNumber, carrier) {
         service: ['Express', 'Standard', 'Economy', 'Priority'][Math.floor(Math.random() * 4)]
     };
 
+    // Get AI prediction for delivery date
+    const aiPrediction = predictDeliveryDate(timeline, carrier, packageInfo);
+
     return {
         trackingNumber,
         carrier: carrier.name,
         timeline,
         packageInfo,
-        currentStatus: timeline[timeline.length - 1].status
+        currentStatus: timeline[timeline.length - 1].status,
+        aiPrediction
     };
 }
 
@@ -372,6 +592,38 @@ function displayResults(data) {
     const packageInfoContainer = document.getElementById('packageInfo');
     packageInfoContainer.innerHTML = '';
 
+    // Add AI prediction banner if available
+    if (data.aiPrediction && data.currentStatus !== 'Delivered') {
+        const predictionBanner = document.createElement('div');
+        predictionBanner.className = 'ai-prediction-banner';
+
+        let deliveryText;
+        if (data.aiPrediction.daysRemaining === 0) {
+            deliveryText = 'Today';
+        } else if (data.aiPrediction.daysRemaining === 1) {
+            deliveryText = 'Tomorrow';
+        } else {
+            deliveryText = formatDate(data.aiPrediction.date).split(',')[0]; // Just the date part
+        }
+
+        predictionBanner.innerHTML = `
+            <div class="ai-prediction-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+                <span>AI-Powered Prediction</span>
+            </div>
+            <div class="ai-prediction-content">
+                <div class="prediction-date">${deliveryText}</div>
+                <div class="prediction-confidence">${data.aiPrediction.confidence}% confidence</div>
+                <div class="prediction-reason">${data.aiPrediction.reason}</div>
+            </div>
+        `;
+        packageInfoContainer.appendChild(predictionBanner);
+    }
+
     const infoItems = [
         { label: 'Service Type', value: data.packageInfo.service },
         { label: 'Weight', value: data.packageInfo.weight },
@@ -435,6 +687,15 @@ function handleTracking() {
         carrierInfo.innerHTML = `
             <span style="color: #ff9500;">Could not detect carrier from tracking number.</span><br>
             <span style="color: #666666;">Please check the format. Supported: UPS (1Z...), FedEx (12-22 digits), USPS (94/92/93/82...), and international codes (XX123456789YY).</span>
+        `;
+        return;
+    }
+
+    // Check for validation error
+    if (carrier.error === 'invalid') {
+        carrierInfo.innerHTML = `
+            <span style="color: #ff3b30;">Invalid ${carrier.carrier} tracking number.</span><br>
+            <span style="color: #666666;">The tracking number format matches ${carrier.carrier}, but the checksum validation failed. Please verify the number is correct.</span>
         `;
         return;
     }

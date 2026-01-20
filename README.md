@@ -1,27 +1,22 @@
-# 📦 Snylmail & Animation Studio
+# 📦 Snylmail
 
-A beautifully designed, worldwide parcel tracking application with support for major international carriers. Also includes a professional animation design studio for creating and exporting animations with AI-agent-ready specifications.
+Track the trail of your mail - A beautifully designed, worldwide parcel tracking application with support for major international carriers, checksum validation, and AI-powered delivery predictions.
 
 ![Snylmail](https://img.shields.io/badge/status-active-success.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-
-## 🎯 What's Inside
-
-### 📦 Snylmail
-Track packages from anywhere in the world with real-time carrier detection and beautiful UI.
-
-### ⚡ Animation Studio
-A visual design tool that bridges the gap between visual/interactive design and AI code generation. Design animations visually, export perfect specifications for AI agents.
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 
 ## ✨ Features
 
 - 🌍 **Worldwide Carrier Support** - Track packages from 12+ international carriers
-- 🎨 **Beautiful UI** - Modern gradient design with smooth animations
+- 🤖 **AI-Powered Predictions** - Smart delivery date predictions with confidence levels
+- ✅ **Checksum Validation** - Validates tracking numbers for UPS, FedEx, and USPS
+- 🎨 **Beautiful Minimal UI** - Clean, distraction-free design inspired by Things and 1Password
 - 📱 **Responsive Design** - Works perfectly on mobile, tablet, and desktop
 - 🔍 **Auto-Detection** - Automatically identifies carrier from tracking number
-- ⚡ **Real-time Validation** - Instant feedback as you type
+- 🗺️ **Interactive Maps** - Visualize package journey with OpenStreetMap
+- 👤 **User Accounts** - Save parcels with Google/Apple sign-in
+- 📦 **Parcel Naming** - Give your packages memorable names
 - 📊 **Visual Timeline** - Clear status updates with location history
-- 🎯 **User-Friendly** - Simple, intuitive interface
 
 ## 🌐 Supported Carriers
 
@@ -169,248 +164,98 @@ Since this is a frontend-only application, tracking data is generated for demons
 - DHL API
 - And respective carrier APIs for other services
 
----
+## 🤖 AI-Powered Delivery Predictions
 
-# ⚡ Animation Studio
+Snylmail includes an intelligent delivery prediction system that analyzes multiple factors to estimate when your package will arrive:
 
-## The Problem It Solves
 
-AI coding agents like Claude and Cursor have dramatically reduced the time it takes to go from idea to functional software. But the experience of designing and refining visual and interactive elements with them is challenging.
+### How It Works
 
-The terminal is an incredible tool for communicating direction with language, but it's terrible for defining and exploring visual and interactive objects like animations.
+- **Current Status Analysis**: Evaluates the current package status (Delivered, Out for Delivery, In Transit, etc.)
+- **Service Type Recognition**: Factors in Express, Priority, Standard, or Economy shipping
+- **Carrier Patterns**: Applies carrier-specific delivery time patterns
+- **Journey Analysis**: Reviews the number and timing of tracking events
+- **Confidence Scoring**: Provides a confidence level (60-95%) for each prediction
 
-In the old world, creating animations meant:
-1. Type some code like `cubic-bezier(0.3, 0.05, 0.45, 1)`
-2. Refresh your browser
-3. Realize it doesn't feel right (because who can know what those numbers feel like?)
-4. Edit values, save, refresh, repeat...
+### Example Predictions
 
-**Animation Studio solves this** by letting you:
-1. Design animations visually in real-time
-2. Adjust properties and see instant feedback
-3. Export perfect specifications for AI agents
-4. Paste into your terminal and have your agent implement it everywhere
+- **Out for Delivery**: Today (95% confidence)
+- **In Transit (Express)**: 1-2 days (85% confidence)
+- **Picked Up (Standard)**: 5-7 days (75% confidence)
 
-## ✨ Animation Studio Features
+The AI prediction appears as a prominent banner in the tracking results, showing:
+- Estimated delivery date
+- Confidence percentage
+- Reasoning behind the prediction
 
-- 🎨 **Real-time Visual Editor** - See your animations as you design them
-- 📐 **Interactive Bezier Curve Editor** - Drag control points to create custom easing functions
-- 🎯 **Component Previews** - Test animations on buttons, cards, modals, notifications, and badges
-- ⚙️ **Precise Controls** - Fine-tune duration, delay, and easing with real-time feedback
-- 📤 **Multi-format Export** - Generate CSS, JavaScript, and AI-ready prompts
-- 🔄 **Play & Loop Controls** - Test animations in different scenarios
-- 💾 **Copy to Clipboard** - One-click copy for all export formats
+## ✅ Checksum Validation
 
-## 🎬 Animation Types
+To ensure tracking number accuracy, Snylmail validates tracking numbers using carrier-specific checksum algorithms:
 
-The studio includes 11 pre-built animation types:
+### Supported Validation
 
-- **Fade In/Out** - Smooth opacity transitions
-- **Slide In** (Up, Down, Left, Right) - Directional entrances
-- **Scale In/Out** - Zoom effects
-- **Rotate In** - Spinning entrance with scale
-- **Bounce In** - Playful bouncing effect
-- **Shake** - Attention-grabbing oscillation
+- **UPS**: Mod 10 check digit validation for 1Z tracking numbers
+- **FedEx**: Mod 10 validation for 12 and 15-digit tracking numbers
+- **USPS**: Mod 10 validation for 20-22 digit tracking numbers
 
-## 🚀 Getting Started with Animation Studio
+### How It Works
 
-### Open the Studio
+When you enter a tracking number:
+1. Pattern matching identifies the potential carrier
+2. Checksum algorithm verifies the tracking number is valid
+3. If validation fails, you'll see an error message explaining the issue
+4. Only valid tracking numbers proceed to tracking
 
-```bash
-# On macOS
-open animation-studio.html
+This prevents typos and ensures you're tracking legitimate package numbers.
 
-# On Linux
-xdg-open animation-studio.html
+## 🔐 Firebase Setup (Optional)
 
-# On Windows
-start animation-studio.html
-```
+Snylmail includes Firebase integration for user accounts and saving parcels. To enable these features:
 
-### Using the Studio
+### 1. Create a Firebase Project
 
-1. **Choose a Component** - Select the UI element you want to animate (button, card, modal, etc.)
+Visit [Firebase Console](https://console.firebase.google.com/) and create a new project.
 
-2. **Pick an Animation** - Choose from 11 pre-built animation types
+### 2. Enable Authentication
 
-3. **Adjust Timing** - Fine-tune duration (100-3000ms) and delay (0-2000ms)
+- Go to Authentication > Sign-in method
+- Enable Google and/or Apple sign-in providers
 
-4. **Select Easing** - Choose from presets or create custom cubic-bezier curves
+### 3. Create Firestore Database
 
-5. **Preview** - Click Play to see your animation in action
+- Go to Firestore Database
+- Create database in production mode
+- Set security rules:
 
-6. **Export** - Copy CSS, JavaScript, or AI-ready prompts
-
-### The Visual Bezier Editor
-
-The crown jewel of the Animation Studio is the interactive cubic-bezier curve editor:
-
-- **Visual Canvas** - See your timing function as a curve
-- **Draggable Control Points** - Intuitively adjust P1 and P2 handles
-- **Real-time Updates** - Watch the animation update as you drag
-- **Precise Input** - Fine-tune with numeric inputs for exact values
-
-Instead of guessing what `cubic-bezier(0.3, 0.05, 0.45, 1)` feels like, you can **see it, drag it, feel it**.
-
-### Export Formats
-
-#### CSS Export
-```css
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animated-element {
-  animation: fadeIn 600ms ease;
-}
-```
-
-#### JavaScript Export
 ```javascript
-const element = document.querySelector('.your-element');
-
-element.animate([
-  { opacity: 0 },
-  { opacity: 1 }
-], {
-  duration: 600,
-  delay: 0,
-  easing: 'ease',
-  fill: 'forwards'
-});
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/parcels/{parcelId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
 ```
 
-#### AI Agent Prompt
-```
-Implement a fade in animation for button components with
-the following exact specifications:
+### 4. Add Configuration
 
-ANIMATION DETAILS:
-- Name: fadeIn
-- Type: Fade In
-- Duration: 600ms
-- Easing: ease
+Update `auth.js` with your Firebase config:
 
-KEYFRAMES:
-from:
-  opacity: 0
-to:
-  opacity: 1
-
-IMPLEMENTATION REQUIREMENTS:
-1. Create a CSS @keyframes animation named "fadeIn"
-2. Apply this animation to all button components
-3. Use the exact timing function: ease
-4. The animation should feel smooth and polished
-5. Ensure the animation works across all modern browsers
-
-FEEL:
-The animation should feel smooth and balanced, natural and organic.
+```javascript
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
 ```
 
-## 🎯 Workflow Example
+### Demo Mode
 
-### Traditional Workflow (The Old Way)
-1. Write code: `animation: slideIn 600ms cubic-bezier(0.3, 0.05, 0.45, 1);`
-2. Refresh browser
-3. "Hmm, too fast and feels weird"
-4. Edit: `animation: slideIn 800ms ease-out;`
-5. Refresh browser
-6. "Better, but the easing isn't quite right"
-7. Edit: `animation: slideIn 800ms cubic-bezier(0.2, 0.8, 0.2, 1);`
-8. Refresh browser
-9. Repeat 10+ times...
-
-### Animation Studio Workflow (The New Way)
-1. Open Animation Studio
-2. Select "Slide In Up" animation
-3. Drag duration slider while watching live preview
-4. Switch between easing presets to find the right feel
-5. Or drag bezier curve control points for perfect custom easing
-6. Click "Copy" on AI Prompt
-7. Paste into terminal: "Claude, implement this animation"
-8. Done. Perfect. First try.
-
-## 🎨 Visual Interface
-
-The studio features a **3-panel professional layout**:
-
-### Left Panel: Controls
-- Component selector
-- Animation type dropdown
-- Duration slider with live value
-- Delay slider with live value
-- Easing presets (6 common functions)
-- Custom bezier curve editor with draggable points
-
-### Center Panel: Live Preview
-- Real-time animation preview
-- Grid background for spatial reference
-- Play button to trigger animation
-- Loop toggle for continuous playback
-- Actual component rendering (not just mockups)
-
-### Right Panel: Export
-- CSS code with syntax highlighting
-- JavaScript implementation examples
-- AI-ready prompt with detailed specifications
-- One-click copy buttons for each format
-- Specifications include the "feel" of the animation
-
-## 🛠️ Technical Implementation
-
-### Technologies
-- Pure HTML5, CSS3, JavaScript
-- Canvas API for bezier curve visualization
-- Web Animations API support
-- CSS custom properties for theming
-- Zero dependencies, zero build step
-
-### File Structure
-```
-stunning-octo-spork/
-├── animation-studio.html    # Studio interface
-├── animation-studio.js      # Interactive logic
-└── ...
-```
-
-### Dark Theme Design
-- Professional dark UI optimized for long sessions
-- Reduced eye strain
-- Syntax-highlighted code blocks
-- Accent colors for visual hierarchy
-
-## 💡 Why This Matters
-
-**Before:** Describing animation feel through text alone is like describing a color to someone who can't see it. Words like "smooth", "snappy", "organic" mean different things to different people.
-
-**After:** You design the exact animation you want, see it working in context, and export a specification that captures your intent with perfect clarity. No ambiguity, no back-and-forth, no "that's not quite what I meant."
-
-This is the future of working with AI agents: **Visual tools for visual problems, language for everything else.**
-
-## 🔄 Integration with AI Workflows
-
-### Step 1: Design Visually
-Open Animation Studio, experiment with settings, find the perfect feel.
-
-### Step 2: Export Specification
-Click "Copy" on the AI Prompt export.
-
-### Step 3: Implement with AI
-Paste into your terminal:
-```
-Claude, implement this animation across all modals in the application:
-
-[Paste detailed specification]
-```
-
-### Step 4: Done
-Your AI agent implements it perfectly, first try, because the specification is unambiguous and complete.
+Without Firebase configuration, the app falls back to localStorage for saving parcels (no authentication required).
 
 ## 📱 Mobile Responsive
 
@@ -428,10 +273,10 @@ Edit the CSS variables in `styles.css`:
 
 ```css
 :root {
-    --primary-color: #6366f1;
-    --secondary-color: #ec4899;
-    --success-color: #10b981;
-    /* Add your custom colors */
+    --primary: #0066ff;
+    --success: #00c853;
+    --warning: #ff9500;
+    --danger: #ff3b30;
 }
 ```
 
@@ -451,18 +296,15 @@ const carriers = {
 };
 ```
 
-## 🚀 Future Enhancements
+For carriers with checksum validation, also add a validator function:
 
-Potential features for future versions:
+```javascript
+checksumValidators.validateYourCarrier = (trackingNumber) => {
+    // Implement your checksum logic
+    return true; // or false
+};
+```
 
-- Real carrier API integration
-- Push notifications for status updates
-- Save tracking numbers to local storage
-- Multi-package tracking dashboard
-- QR code scanning for tracking numbers
-- Email notifications
-- Internationalization (i18n)
-- Dark mode toggle
 
 ## 🤝 Contributing
 
