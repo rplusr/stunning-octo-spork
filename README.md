@@ -20,18 +20,37 @@ Track the trail of your mail - A beautifully designed, worldwide parcel tracking
 
 ## 🌐 Supported Carriers
 
+### North America
 - **UPS** - United Parcel Service (Worldwide)
 - **FedEx** - Federal Express (Worldwide)
 - **USPS** - United States Postal Service
-- **DHL** - DHL Express (Worldwide)
-- **Royal Mail** - United Kingdom
+- **Old Dominion Freight** - LTL freight carrier (USA)
+- **XPO Logistics** - Freight and logistics (USA)
+- **R+L Carriers** - LTL freight carrier (USA)
 - **Canada Post** - Canada
-- **Australia Post** - Australia
-- **China Post** - China
-- **Japan Post** - Japan
+
+### Europe
+- **DHL** - DHL Express (Worldwide)
+- **TNT Express** - Express delivery (Europe)
+- **Royal Mail** - United Kingdom
 - **Deutsche Post** - Germany
 - **La Poste** - France
 - **Correos** - Spain
+
+### Asia & Pacific
+- **SF Express** - Leading express delivery (China/Asia)
+- **J&T Express** - Express delivery (Southeast Asia)
+- **ZTO Express** - Express delivery (China)
+- **YTO Express** - Express delivery (China)
+- **STO Express** - Express delivery (China)
+- **Yunda Express** - Express delivery (China)
+- **Best Express** - Express delivery (China)
+- **Cainiao** - Alibaba logistics network (China)
+- **Ninja Van** - Express delivery (Southeast Asia)
+- **Kerry Express** - Express delivery (Thailand/Asia)
+- **China Post** - China
+- **Japan Post** - Japan
+- **Australia Post** - Australia
 
 ## 🚀 Quick Start
 

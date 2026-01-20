@@ -183,6 +183,122 @@ const carriers = {
             /^[A-Z]{3}\d{7,9}$/i   // DHL eCommerce
         ],
         website: 'https://www.dhl.com'
+    },
+    sfExpress: {
+        name: 'SF Express',
+        patterns: [
+            /^SF\d{12}$/i,         // SF Express standard (SF + 12 digits)
+            /^\d{12}$/             // 12-digit numeric format
+        ],
+        website: 'https://www.sf-express.com'
+    },
+    jtExpress: {
+        name: 'J&T Express',
+        patterns: [
+            /^JT\d{13}$/i,         // JT + 13 digits
+            /^JD\d{13}$/i          // JD + 13 digits (J&T variant)
+        ],
+        website: 'https://www.jtexpress.com'
+    },
+    ztoExpress: {
+        name: 'ZTO Express',
+        patterns: [
+            /^\d{12,13}$/,         // 12-13 digit format
+            /^ZTO\d{10,12}$/i      // ZTO prefix + digits
+        ],
+        website: 'https://www.zto.com'
+    },
+    ytoExpress: {
+        name: 'YTO Express',
+        patterns: [
+            /^YT\d{13}$/i,         // YT + 13 digits
+            /^\d{13}$/             // 13-digit format
+        ],
+        website: 'https://www.yto.net.cn'
+    },
+    stoExpress: {
+        name: 'STO Express',
+        patterns: [
+            /^ST\d{13}$/i,         // ST + 13 digits
+            /^\d{13}$/             // 13-digit format
+        ],
+        website: 'https://www.sto.cn'
+    },
+    ninjaVan: {
+        name: 'Ninja Van',
+        patterns: [
+            /^NVCN\d{10}$/i,       // Singapore format
+            /^NVMY\d{10}$/i,       // Malaysia format
+            /^NVTH\d{10}$/i,       // Thailand format
+            /^NVPH\d{10}$/i,       // Philippines format
+            /^NVID\d{10}$/i,       // Indonesia format
+            /^NVVN\d{10}$/i        // Vietnam format
+        ],
+        website: 'https://www.ninjavan.co'
+    },
+    kerryExpress: {
+        name: 'Kerry Express',
+        patterns: [
+            /^KEX\d{10}$/i,        // KEX + 10 digits
+            /^\d{10}$/             // 10-digit format
+        ],
+        website: 'https://th.kerryexpress.com'
+    },
+    oldDominion: {
+        name: 'Old Dominion Freight',
+        patterns: [
+            /^OD\d{9}$/i,          // OD + 9 digits
+            /^\d{3}-\d{7}$/        // Format: 123-4567890
+        ],
+        website: 'https://www.odfl.com'
+    },
+    xpoLogistics: {
+        name: 'XPO Logistics',
+        patterns: [
+            /^XPO\d{10}$/i,        // XPO + 10 digits
+            /^\d{3}-\d{8}$/        // Format: 123-12345678
+        ],
+        website: 'https://www.xpo.com'
+    },
+    rlCarriers: {
+        name: 'R+L Carriers',
+        patterns: [
+            /^RL\d{9}$/i,          // RL + 9 digits
+            /^\d{3}-\d{6}$/        // Format: 123-456789
+        ],
+        website: 'https://www.rlcarriers.com'
+    },
+    tnt: {
+        name: 'TNT Express',
+        patterns: [
+            /^[A-Z]{2}\d{9}$/i,    // GD format (FedEx TNT)
+            /^\d{9}$/              // 9-digit format
+        ],
+        website: 'https://www.tnt.com'
+    },
+    cainiao: {
+        name: 'Cainiao',
+        patterns: [
+            /^LP\d{13}$/i,         // Logistics parcel format
+            /^[A-Z]{2}\d{9}CN$/i   // International Cainiao
+        ],
+        website: 'https://www.cainiao.com'
+    },
+    yundaExpress: {
+        name: 'Yunda Express',
+        patterns: [
+            /^YD\d{13}$/i,         // YD + 13 digits
+            /^\d{13}$/             // 13-digit format
+        ],
+        website: 'https://www.yundaex.com'
+    },
+    bestExpress: {
+        name: 'Best Express',
+        patterns: [
+            /^\d{12}$/,            // 12-digit format
+            /^BEST\d{10}$/i        // BEST + 10 digits
+        ],
+        website: 'https://www.best-inc.com'
     }
 };
 
@@ -357,7 +473,21 @@ function generateTrackingData(trackingNumber, carrier) {
         'Japan Post': ['Tokyo', 'Osaka', 'Nagoya'],
         'Deutsche Post': ['Frankfurt', 'Berlin', 'Munich'],
         'La Poste': ['Paris', 'Lyon', 'Marseille'],
-        'Correos': ['Madrid', 'Barcelona', 'Valencia']
+        'Correos': ['Madrid', 'Barcelona', 'Valencia'],
+        'SF Express': ['Shenzhen, China', 'Beijing, China', 'Shanghai, China'],
+        'J&T Express': ['Jakarta, Indonesia', 'Bangkok, Thailand', 'Manila, Philippines'],
+        'ZTO Express': ['Shanghai, China', 'Hangzhou, China', 'Guangzhou, China'],
+        'YTO Express': ['Shanghai, China', 'Beijing, China', 'Shenzhen, China'],
+        'STO Express': ['Hangzhou, China', 'Shanghai, China', 'Guangzhou, China'],
+        'Ninja Van': ['Singapore', 'Kuala Lumpur, Malaysia', 'Bangkok, Thailand'],
+        'Kerry Express': ['Bangkok, Thailand', 'Chiang Mai, Thailand', 'Phuket, Thailand'],
+        'Old Dominion Freight': ['Thomasville, NC, USA', 'Dallas, TX, USA', 'Atlanta, GA, USA'],
+        'XPO Logistics': ['Greenwich, CT, USA', 'Chicago, IL, USA', 'Los Angeles, CA, USA'],
+        'R+L Carriers': ['Wilmington, OH, USA', 'Chicago, IL, USA', 'Dallas, TX, USA'],
+        'TNT Express': ['Amsterdam, Netherlands', 'London, UK', 'Paris, France'],
+        'Cainiao': ['Hangzhou, China', 'Shanghai, China', 'Hong Kong'],
+        'Yunda Express': ['Shanghai, China', 'Guangzhou, China', 'Beijing, China'],
+        'Best Express': ['Hangzhou, China', 'Shanghai, China', 'Guangzhou, China']
     };
 
     const carrierLocations = locations[carrier.name] || ['Distribution Center', 'Regional Hub', 'Local Facility'];
