@@ -552,6 +552,12 @@ function formatDate(date) {
 // Store current tracking data globally
 let currentTrackingData = null;
 let trackingMap = null;
+let savedParcelMetadata = null;
+
+// Function to set saved parcel metadata (called from auth.js)
+window.setSavedParcelMetadata = (metadata) => {
+    savedParcelMetadata = metadata;
+};
 
 // Geocoding service for location coordinates (using Nominatim - free OpenStreetMap service)
 async function geocodeLocation(locationString) {
@@ -650,12 +656,57 @@ async function updateTrackingMap(timeline) {
 
 // Display tracking results
 function displayResults(data) {
+    // Merge saved metadata if it exists
+    if (savedParcelMetadata) {
+        data = {
+            ...data,
+            name: savedParcelMetadata.name || data.name,
+            orderNumber: savedParcelMetadata.orderNumber || data.orderNumber,
+            invoiceNumber: savedParcelMetadata.invoiceNumber || data.invoiceNumber
+        };
+        // Clear saved metadata after using it
+        savedParcelMetadata = null;
+    }
+
     // Store for saving later
     currentTrackingData = data;
 
     // Update tracking number and carrier
     document.getElementById('displayTrackingNumber').textContent = data.trackingNumber;
     document.getElementById('displayCarrier').textContent = data.carrier;
+
+    // Add order number and invoice number displays if they exist
+    const resultsHeader = document.querySelector('.results-header');
+
+    // Remove any existing order/invoice displays first
+    const existingOrderDisplay = document.getElementById('orderNumberDisplay');
+    const existingInvoiceDisplay = document.getElementById('invoiceNumberDisplay');
+    if (existingOrderDisplay) existingOrderDisplay.remove();
+    if (existingInvoiceDisplay) existingInvoiceDisplay.remove();
+
+    // Add order number if it exists
+    if (data.orderNumber) {
+        const orderDiv = document.createElement('div');
+        orderDiv.id = 'orderNumberDisplay';
+        orderDiv.className = 'order-display';
+        orderDiv.innerHTML = `
+            <span class="label">Order Number:</span>
+            <span class="order-value">${data.orderNumber}</span>
+        `;
+        resultsHeader.appendChild(orderDiv);
+    }
+
+    // Add invoice number if it exists
+    if (data.invoiceNumber) {
+        const invoiceDiv = document.createElement('div');
+        invoiceDiv.id = 'invoiceNumberDisplay';
+        invoiceDiv.className = 'invoice-display';
+        invoiceDiv.innerHTML = `
+            <span class="label">Invoice Number:</span>
+            <span class="invoice-value">${data.invoiceNumber}</span>
+        `;
+        resultsHeader.appendChild(invoiceDiv);
+    }
 
     // Update status overview
     const statusTitle = document.getElementById('statusTitle');
@@ -886,12 +937,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show name modal
         document.getElementById('nameParcelModal').classList.remove('hidden');
         document.getElementById('parcelNameInput').value = '';
+        document.getElementById('orderNumberInput').value = '';
+        document.getElementById('invoiceNumberInput').value = '';
         document.getElementById('parcelNameInput').focus();
     });
 
     // Name modal handlers
     const nameModal = document.getElementById('nameParcelModal');
     const parcelNameInput = document.getElementById('parcelNameInput');
+    const orderNumberInput = document.getElementById('orderNumberInput');
+    const invoiceNumberInput = document.getElementById('invoiceNumberInput');
     const closeNameModal = document.getElementById('closeNameModal');
     const cancelSaveBtn = document.getElementById('cancelSaveBtn');
     const confirmSaveBtn = document.getElementById('confirmSaveBtn');
@@ -900,6 +955,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideNameModal = () => {
         nameModal.classList.add('hidden');
         parcelNameInput.value = '';
+        orderNumberInput.value = '';
+        invoiceNumberInput.value = '';
     };
 
     closeNameModal.addEventListener('click', hideNameModal);
@@ -917,11 +974,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentTrackingData) return;
 
         const parcelName = parcelNameInput.value.trim();
+        const orderNumber = orderNumberInput.value.trim();
+        const invoiceNumber = invoiceNumberInput.value.trim();
 
-        // Add name to tracking data
+        // Add name, order number, and invoice number to tracking data
         const dataToSave = {
             ...currentTrackingData,
-            name: parcelName || null
+            name: parcelName || null,
+            orderNumber: orderNumber || null,
+            invoiceNumber: invoiceNumber || null
         };
 
         const success = await saveParcelToDatabase(dataToSave);

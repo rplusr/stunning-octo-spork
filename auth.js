@@ -168,6 +168,8 @@ async function saveParcel(parcelData) {
         carrier: parcelData.carrier,
         currentStatus: parcelData.currentStatus,
         name: parcelData.name || null,
+        orderNumber: parcelData.orderNumber || null,
+        invoiceNumber: parcelData.invoiceNumber || null,
         savedAt: new Date().toISOString(),
         userId: currentUser.uid
     };
@@ -291,6 +293,8 @@ function showSavedParcels() {
             });
 
             const nameDisplay = parcel.name ? `<div class="saved-parcel-name">${parcel.name}</div>` : '';
+            const orderNumberDisplay = parcel.orderNumber ? `<div class="saved-parcel-meta">Order: ${parcel.orderNumber}</div>` : '';
+            const invoiceNumberDisplay = parcel.invoiceNumber ? `<div class="saved-parcel-meta">Invoice: ${parcel.invoiceNumber}</div>` : '';
 
             item.innerHTML = `
                 <div class="saved-parcel-header-row">
@@ -298,6 +302,8 @@ function showSavedParcels() {
                         ${nameDisplay}
                         <div class="saved-parcel-tracking">${parcel.trackingNumber}</div>
                         <div class="saved-parcel-carrier">${parcel.carrier}</div>
+                        ${orderNumberDisplay}
+                        ${invoiceNumberDisplay}
                         <div class="saved-parcel-date">Saved ${dateStr}</div>
                     </div>
                     <button class="delete-parcel-btn" data-id="${parcel.id || ''}" data-index="${index}">
@@ -313,6 +319,16 @@ function showSavedParcels() {
                 if (!e.target.closest('.delete-parcel-btn')) {
                     document.getElementById('trackingInput').value = parcel.trackingNumber;
                     savedParcelsSection.classList.add('hidden');
+
+                    // Store saved metadata for display
+                    if (typeof window.setSavedParcelMetadata === 'function') {
+                        window.setSavedParcelMetadata({
+                            name: parcel.name,
+                            orderNumber: parcel.orderNumber,
+                            invoiceNumber: parcel.invoiceNumber
+                        });
+                    }
+
                     handleTracking(); // This function is defined in script.js
                 }
             });
