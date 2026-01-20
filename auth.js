@@ -170,6 +170,7 @@ async function saveParcel(parcelData) {
         name: parcelData.name || null,
         orderNumber: parcelData.orderNumber || null,
         invoiceNumber: parcelData.invoiceNumber || null,
+        archived: false,
         savedAt: new Date().toISOString(),
         userId: currentUser.uid
     };
@@ -249,6 +250,32 @@ async function deleteParcel(parcelId, index) {
     }
 }
 
+// Toggle archive status
+async function toggleArchive(parcelId, index, currentArchived) {
+    if (!currentUser) return false;
+
+    const newArchivedStatus = !currentArchived;
+
+    if (db && currentUser.uid !== 'demo-user') {
+        try {
+            await db.collection('parcels').doc(parcelId).update({
+                archived: newArchivedStatus
+            });
+            await loadSavedParcels();
+            return true;
+        } catch (error) {
+            console.error('Error archiving parcel:', error);
+            return false;
+        }
+    } else {
+        // Update in localStorage
+        savedParcels[index].archived = newArchivedStatus;
+        localStorage.setItem('savedParcels', JSON.stringify(savedParcels));
+        showSavedParcels();
+        return true;
+    }
+}
+
 // Update saved count
 function updateSavedCount() {
     const countElement = document.getElementById('savedCount');
@@ -271,6 +298,11 @@ document.getElementById('closeSavedBtn')?.addEventListener('click', () => {
     document.getElementById('savedParcelsSection').classList.add('hidden');
 });
 
+// Archive filter toggle
+document.getElementById('showArchivedToggle')?.addEventListener('change', () => {
+    showSavedParcels();
+});
+
 // Show saved parcels modal
 function showSavedParcels() {
     const savedParcelsSection = document.getElementById('savedParcelsSection');
@@ -278,10 +310,24 @@ function showSavedParcels() {
 
     savedParcelsList.innerHTML = '';
 
-    if (savedParcels.length === 0) {
-        savedParcelsList.innerHTML = '<div class="empty-saved-message">No saved parcels yet.<br>Track a package and save it to see it here.</div>';
+    // Get filter state
+    const showArchived = document.getElementById('showArchivedToggle')?.checked || false;
+
+    // Filter parcels based on archived status
+    const filteredParcels = showArchived ? savedParcels : savedParcels.filter(p => !p.archived);
+
+    if (filteredParcels.length === 0) {
+        const message = showArchived ?
+            'No archived parcels.' :
+            'No saved parcels yet.<br>Track a package and save it to see it here.';
+        savedParcelsList.innerHTML = `<div class="empty-saved-message">${message}</div>`;
     } else {
-        savedParcels.forEach((parcel, index) => {
+        filteredParcels.forEach((parcel, filteredIndex) => {
+            // Get the original index from savedParcels array
+            const index = savedParcels.findIndex(p =>
+                p.trackingNumber === parcel.trackingNumber && p.savedAt === parcel.savedAt
+            );
+
             const item = document.createElement('div');
             item.className = 'saved-parcel-item';
 
@@ -295,28 +341,39 @@ function showSavedParcels() {
             const nameDisplay = parcel.name ? `<div class="saved-parcel-name">${parcel.name}</div>` : '';
             const orderNumberDisplay = parcel.orderNumber ? `<div class="saved-parcel-meta">Order: ${parcel.orderNumber}</div>` : '';
             const invoiceNumberDisplay = parcel.invoiceNumber ? `<div class="saved-parcel-meta">Invoice: ${parcel.invoiceNumber}</div>` : '';
+            const archivedBadge = parcel.archived ? '<span class="archived-badge">Archived</span>' : '';
 
             item.innerHTML = `
                 <div class="saved-parcel-header-row">
                     <div>
                         ${nameDisplay}
-                        <div class="saved-parcel-tracking">${parcel.trackingNumber}</div>
+                        <div class="saved-parcel-tracking">${parcel.trackingNumber} ${archivedBadge}</div>
                         <div class="saved-parcel-carrier">${parcel.carrier}</div>
                         ${orderNumberDisplay}
                         ${invoiceNumberDisplay}
                         <div class="saved-parcel-date">Saved ${dateStr}</div>
                     </div>
-                    <button class="delete-parcel-btn" data-id="${parcel.id || ''}" data-index="${index}">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 6H5H21M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
+                    <div class="parcel-actions">
+                        <button class="archive-parcel-btn" data-id="${parcel.id || ''}" data-index="${index}" data-archived="${parcel.archived || false}" title="${parcel.archived ? 'Unarchive' : 'Archive'}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                ${parcel.archived ?
+                                    '<path d="M3 3h18v6H3V3zm5 8v10m8-10v10M3 9h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' :
+                                    '<path d="M3 3h18v6H3V3zm0 6h18v12H3V9zm7 4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+                                }
+                            </svg>
+                        </button>
+                        <button class="delete-parcel-btn" data-id="${parcel.id || ''}" data-index="${index}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 6H5H21M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             `;
 
             // Click to track
             item.addEventListener('click', (e) => {
-                if (!e.target.closest('.delete-parcel-btn')) {
+                if (!e.target.closest('.delete-parcel-btn') && !e.target.closest('.archive-parcel-btn')) {
                     document.getElementById('trackingInput').value = parcel.trackingNumber;
                     savedParcelsSection.classList.add('hidden');
 
@@ -330,6 +387,17 @@ function showSavedParcels() {
                     }
 
                     handleTracking(); // This function is defined in script.js
+                }
+            });
+
+            // Archive button
+            const archiveBtn = item.querySelector('.archive-parcel-btn');
+            archiveBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+
+                const success = await toggleArchive(parcel.id, index, parcel.archived || false);
+                if (success) {
+                    showSavedParcels(); // Refresh the list
                 }
             });
 

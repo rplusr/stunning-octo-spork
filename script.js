@@ -84,6 +84,7 @@ const checksumValidators = {
 // Carrier detection patterns and information
 // Ordered from most specific to least specific to avoid false positives
 const carriers = {
+    // Carriers with unique prefixes (highest priority - no conflicts)
     ups: {
         name: 'UPS',
         patterns: [
@@ -93,16 +94,119 @@ const carriers = {
         ],
         website: 'https://www.ups.com'
     },
+    sfExpress: {
+        name: 'SF Express',
+        patterns: [
+            /^SF\d{12}$/i         // SF Express standard (SF + 12 digits only)
+        ],
+        website: 'https://www.sf-express.com'
+    },
+    jtExpress: {
+        name: 'J&T Express',
+        patterns: [
+            /^JT\d{13}$/i,         // JT + 13 digits
+            /^JD\d{13}$/i          // JD + 13 digits (J&T variant)
+        ],
+        website: 'https://www.jtexpress.com'
+    },
+    ytoExpress: {
+        name: 'YTO Express',
+        patterns: [
+            /^YT\d{13}$/i         // YT + 13 digits only
+        ],
+        website: 'https://www.yto.net.cn'
+    },
+    stoExpress: {
+        name: 'STO Express',
+        patterns: [
+            /^ST\d{13}$/i         // ST + 13 digits only
+        ],
+        website: 'https://www.sto.cn'
+    },
+    yundaExpress: {
+        name: 'Yunda Express',
+        patterns: [
+            /^YD\d{13}$/i         // YD + 13 digits only
+        ],
+        website: 'https://www.yundaex.com'
+    },
+    bestExpress: {
+        name: 'Best Express',
+        patterns: [
+            /^BEST\d{10}$/i        // BEST + 10 digits only
+        ],
+        website: 'https://www.best-inc.com'
+    },
+    ztoExpress: {
+        name: 'ZTO Express',
+        patterns: [
+            /^ZTO\d{10,12}$/i      // ZTO prefix + digits only
+        ],
+        website: 'https://www.zto.com'
+    },
+    ninjaVan: {
+        name: 'Ninja Van',
+        patterns: [
+            /^NVCN\d{10}$/i,       // Singapore format
+            /^NVMY\d{10}$/i,       // Malaysia format
+            /^NVTH\d{10}$/i,       // Thailand format
+            /^NVPH\d{10}$/i,       // Philippines format
+            /^NVID\d{10}$/i,       // Indonesia format
+            /^NVVN\d{10}$/i        // Vietnam format
+        ],
+        website: 'https://www.ninjavan.co'
+    },
+    kerryExpress: {
+        name: 'Kerry Express',
+        patterns: [
+            /^KEX\d{10}$/i        // KEX + 10 digits only
+        ],
+        website: 'https://th.kerryexpress.com'
+    },
+    oldDominion: {
+        name: 'Old Dominion Freight',
+        patterns: [
+            /^OD\d{9}$/i,          // OD + 9 digits
+            /^\d{3}-\d{7}$/        // Format: 123-4567890
+        ],
+        website: 'https://www.odfl.com'
+    },
+    xpoLogistics: {
+        name: 'XPO Logistics',
+        patterns: [
+            /^XPO\d{10}$/i,        // XPO + 10 digits
+            /^\d{3}-\d{8}$/        // Format: 123-12345678
+        ],
+        website: 'https://www.xpo.com'
+    },
+    rlCarriers: {
+        name: 'R+L Carriers',
+        patterns: [
+            /^RL\d{9}$/i,          // RL + 9 digits
+            /^\d{3}-\d{6}$/        // Format: 123-456789
+        ],
+        website: 'https://www.rlcarriers.com'
+    },
+    cainiao: {
+        name: 'Cainiao',
+        patterns: [
+            /^LP\d{13}$/i,         // Logistics parcel format
+            /^[A-Z]{2}\d{9}CN$/i   // International Cainiao
+        ],
+        website: 'https://www.cainiao.com'
+    },
+    // FedEx with specific prefixes (before generic patterns)
     fedex: {
         name: 'FedEx',
         patterns: [
             /^96\d{20}$/,  // FedEx SmartPost (starts with 96)
-            /^\d{15}$/,    // FedEx Express (15 digits)
+            /^\d{15}$/,    // FedEx Express (15 digits - unique length)
             /^\d{12}$/,    // FedEx Express (12 digits)
-            /^\d{20,22}$/  // FedEx Ground
+            /^\d{20,22}$/  // FedEx Ground (20-22 digits)
         ],
         website: 'https://www.fedex.com'
     },
+    // USPS with specific prefixes
     usps: {
         name: 'USPS',
         patterns: [
@@ -110,11 +214,11 @@ const carriers = {
             /^92\d{20,22}$/,       // USPS Parcel Select (starts with 92)
             /^93\d{20,22}$/,       // USPS Parcel Select Lightweight (starts with 93)
             /^82\d{8}$/,           // USPS Express Mail (starts with 82)
-            /^(94|92|93|82)\d+$/,  // Other USPS formats
             /^[A-Z]{2}\d{9}US$/i   // International format
         ],
         website: 'https://www.usps.com'
     },
+    // International postal services with country codes
     royalMail: {
         name: 'Royal Mail',
         patterns: [
@@ -127,7 +231,7 @@ const carriers = {
         name: 'Canada Post',
         patterns: [
             /^[A-Z]{2}\d{9}CA$/i,  // International
-            /^\d{16}$/             // Domestic
+            /^\d{16}$/             // Domestic (unique length)
         ],
         website: 'https://www.canadapost.ca'
     },
@@ -135,8 +239,7 @@ const carriers = {
         name: 'Australia Post',
         patterns: [
             /^[A-Z]{2}\d{9}AU$/i,              // International
-            /^\d{2}[A-Z]{3}\d{16,18}$/i,       // Domestic barcode (e.g., 36YDB010108101000930806)
-            /^\d{13}$/                          // Simple 13-digit domestic
+            /^\d{2}[A-Z]{3}\d{16,18}$/i        // Domestic barcode (e.g., 36YDB010108101000930806)
         ],
         website: 'https://auspost.com.au'
     },
@@ -176,98 +279,6 @@ const carriers = {
         ],
         website: 'https://www.correos.es'
     },
-    dhl: {
-        name: 'DHL',
-        patterns: [
-            /^\d{10,11}$/,         // DHL Express (10-11 digits)
-            /^[A-Z]{3}\d{7,9}$/i   // DHL eCommerce
-        ],
-        website: 'https://www.dhl.com'
-    },
-    sfExpress: {
-        name: 'SF Express',
-        patterns: [
-            /^SF\d{12}$/i,         // SF Express standard (SF + 12 digits)
-            /^\d{12}$/             // 12-digit numeric format
-        ],
-        website: 'https://www.sf-express.com'
-    },
-    jtExpress: {
-        name: 'J&T Express',
-        patterns: [
-            /^JT\d{13}$/i,         // JT + 13 digits
-            /^JD\d{13}$/i          // JD + 13 digits (J&T variant)
-        ],
-        website: 'https://www.jtexpress.com'
-    },
-    ztoExpress: {
-        name: 'ZTO Express',
-        patterns: [
-            /^\d{12,13}$/,         // 12-13 digit format
-            /^ZTO\d{10,12}$/i      // ZTO prefix + digits
-        ],
-        website: 'https://www.zto.com'
-    },
-    ytoExpress: {
-        name: 'YTO Express',
-        patterns: [
-            /^YT\d{13}$/i,         // YT + 13 digits
-            /^\d{13}$/             // 13-digit format
-        ],
-        website: 'https://www.yto.net.cn'
-    },
-    stoExpress: {
-        name: 'STO Express',
-        patterns: [
-            /^ST\d{13}$/i,         // ST + 13 digits
-            /^\d{13}$/             // 13-digit format
-        ],
-        website: 'https://www.sto.cn'
-    },
-    ninjaVan: {
-        name: 'Ninja Van',
-        patterns: [
-            /^NVCN\d{10}$/i,       // Singapore format
-            /^NVMY\d{10}$/i,       // Malaysia format
-            /^NVTH\d{10}$/i,       // Thailand format
-            /^NVPH\d{10}$/i,       // Philippines format
-            /^NVID\d{10}$/i,       // Indonesia format
-            /^NVVN\d{10}$/i        // Vietnam format
-        ],
-        website: 'https://www.ninjavan.co'
-    },
-    kerryExpress: {
-        name: 'Kerry Express',
-        patterns: [
-            /^KEX\d{10}$/i,        // KEX + 10 digits
-            /^\d{10}$/             // 10-digit format
-        ],
-        website: 'https://th.kerryexpress.com'
-    },
-    oldDominion: {
-        name: 'Old Dominion Freight',
-        patterns: [
-            /^OD\d{9}$/i,          // OD + 9 digits
-            /^\d{3}-\d{7}$/        // Format: 123-4567890
-        ],
-        website: 'https://www.odfl.com'
-    },
-    xpoLogistics: {
-        name: 'XPO Logistics',
-        patterns: [
-            /^XPO\d{10}$/i,        // XPO + 10 digits
-            /^\d{3}-\d{8}$/        // Format: 123-12345678
-        ],
-        website: 'https://www.xpo.com'
-    },
-    rlCarriers: {
-        name: 'R+L Carriers',
-        patterns: [
-            /^RL\d{9}$/i,          // RL + 9 digits
-            /^\d{3}-\d{6}$/        // Format: 123-456789
-        ],
-        website: 'https://www.rlcarriers.com'
-    },
     tnt: {
         name: 'TNT Express',
         patterns: [
@@ -276,29 +287,14 @@ const carriers = {
         ],
         website: 'https://www.tnt.com'
     },
-    cainiao: {
-        name: 'Cainiao',
+    // DHL at the end with generic patterns (lowest priority)
+    dhl: {
+        name: 'DHL',
         patterns: [
-            /^LP\d{13}$/i,         // Logistics parcel format
-            /^[A-Z]{2}\d{9}CN$/i   // International Cainiao
+            /^[A-Z]{3}\d{7,9}$/i,  // DHL eCommerce (letters first - more specific)
+            /^\d{10,11}$/          // DHL Express (10-11 digits) - last resort
         ],
-        website: 'https://www.cainiao.com'
-    },
-    yundaExpress: {
-        name: 'Yunda Express',
-        patterns: [
-            /^YD\d{13}$/i,         // YD + 13 digits
-            /^\d{13}$/             // 13-digit format
-        ],
-        website: 'https://www.yundaex.com'
-    },
-    bestExpress: {
-        name: 'Best Express',
-        patterns: [
-            /^\d{12}$/,            // 12-digit format
-            /^BEST\d{10}$/i        // BEST + 10 digits
-        ],
-        website: 'https://www.best-inc.com'
+        website: 'https://www.dhl.com'
     }
 };
 
@@ -910,6 +906,53 @@ function handleNewTracking() {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Theme Toggle - Hybrid Mode (system preference + manual override)
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlElement = document.documentElement;
+
+    // Function to set theme
+    const setTheme = (theme) => {
+        htmlElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    };
+
+    // Function to get initial theme
+    const getInitialTheme = () => {
+        // Check localStorage first (manual override)
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            return savedTheme;
+        }
+
+        // Fall back to system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+
+        return 'light';
+    };
+
+    // Set initial theme
+    const initialTheme = getInitialTheme();
+    setTheme(initialTheme);
+
+    // Toggle theme on button click
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = htmlElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+    });
+
+    // Listen for system theme changes (only if user hasn't manually set a preference)
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            // Only auto-switch if user hasn't set a manual preference
+            if (!localStorage.getItem('theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
+
     const trackButton = document.getElementById('trackButton');
     const trackingInput = document.getElementById('trackingInput');
     const newTrackingButton = document.getElementById('newTrackingButton');
